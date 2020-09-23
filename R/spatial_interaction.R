@@ -92,8 +92,6 @@ make_simulated_network = function(gobject,
 #' obtained by reshuffling the cell type labels of each node (cell)
 #' in the spatial network.
 #' @export
-#' @examples
-#'     cellProximityEnrichment(gobject)
 cellProximityEnrichment <- function(gobject,
                                     spatial_network_name = 'Delaunay_network',
                                     cluster_column,
@@ -259,8 +257,6 @@ cellProximityEnrichment <- function(gobject,
 #' the values "select_astrocytes", "select_oligodendrocytes", "other_astrocytes", "other_oligodendroyctes" and "other". Where "other" is all
 #' other cell types found within the selected cell type column.
 #' @export
-#' @examples
-#'     addCellIntMetadata(gobject)
 addCellIntMetadata = function(gobject,
                               spatial_network = 'spatial_network',
                               cluster_column,
@@ -837,9 +833,10 @@ findCellProximityGenes_per_interaction = function(expr_values,
 
 
 
-#' @title findCellProximityGenes
-#' @name findCellProximityGenes
-#' @description Identifies genes that are differentially expressed due to proximity to other cell types.
+#' @title findInteractionChangedGenes
+#' @name findInteractionChangedGenes
+#' @description Identifies cell-to-cell Interaction Changed Genes (ICG),
+#' i.e. genes that are differentially expressed due to proximity to other cell types.#'
 #' @param gobject giotto object
 #' @param expression_values expression values to use
 #' @param selected_genes subset of selected genes (optional)
@@ -855,7 +852,7 @@ findCellProximityGenes_per_interaction = function(expr_values,
 #' @param exclude_selected_cells_from_test exclude interacting cells other cells
 #' @param do_parallel run calculations in parallel with mclapply
 #' @param cores number of cores to use if do_parallel = TRUE
-#' @return cpgObject that contains the differential gene scores
+#' @return cpgObject that contains the Interaction Changed differential gene scores
 #' @details Function to calculate if genes are differentially expressed in cell types
 #'  when they interact (approximated by physical proximity) with other cell types.
 #'  The results data.table in the cpgObject contains - at least - the following columns:
@@ -876,24 +873,22 @@ findCellProximityGenes_per_interaction = function(expr_values,
 #'  \item{unif_int:}{ cell-cell interaction}
 #' }
 #' @export
-#' @examples
-#'     findCellProximityGenes(gobject)
-findCellProximityGenes = function(gobject,
-                                  expression_values = 'normalized',
-                                  selected_genes = NULL,
-                                  cluster_column,
-                                  spatial_network_name = 'Delaunay_network',
-                                  minimum_unique_cells = 1,
-                                  minimum_unique_int_cells = 1,
-                                  diff_test = c('permutation', 'limma', 't.test', 'wilcox'),
-                                  mean_method = c('arithmic', 'geometric'),
-                                  offset = 0.1,
-                                  adjust_method = c("bonferroni","BH", "holm", "hochberg", "hommel",
-                                                    "BY", "fdr", "none"),
-                                  nr_permutations = 1000,
-                                  exclude_selected_cells_from_test = T,
-                                  do_parallel = TRUE,
-                                  cores = NA) {
+findInteractionChangedGenes = function(gobject,
+                                       expression_values = 'normalized',
+                                       selected_genes = NULL,
+                                       cluster_column,
+                                       spatial_network_name = 'Delaunay_network',
+                                       minimum_unique_cells = 1,
+                                       minimum_unique_int_cells = 1,
+                                       diff_test = c('permutation', 'limma', 't.test', 'wilcox'),
+                                       mean_method = c('arithmic', 'geometric'),
+                                       offset = 0.1,
+                                       adjust_method = c("bonferroni","BH", "holm", "hochberg", "hommel",
+                                                         "BY", "fdr", "none"),
+                                       nr_permutations = 1000,
+                                       exclude_selected_cells_from_test = T,
+                                       do_parallel = TRUE,
+                                       cores = NA) {
 
 
 
@@ -998,7 +993,8 @@ findCellProximityGenes = function(gobject,
   permutation_test = ifelse(diff_test == 'permutation', nr_permutations, 'no permutations')
 
   cpgObject = list(CPGscores = final_result,
-                   Giotto_info = list('values' = values, 'cluster' = cluster_column,
+                   Giotto_info = list('values' = values,
+                                      'cluster' = cluster_column,
                                       'spatial network' = spatial_network_name),
                    test_info = list('test' = diff_test,
                                     'p.adj' = adjust_method,
@@ -1012,9 +1008,25 @@ findCellProximityGenes = function(gobject,
 }
 
 
-#' @title findCPG
-#' @name findCPG
-#' @description Identifies genes that are differentially expressed due to proximity to other cell types.
+#' @title findCellProximityGenes
+#' @description Identifies cell-to-cell Interaction Changed Genes (ICG),
+#' i.e. genes that are differentially expressed due to proximity to other cell types.
+#' @inheritDotParams findInteractionChangedGenes
+#' @seealso \code{\link{findInteractionChangedGenes}}
+#' @export
+findCellProximityGenes <- function(...) {
+
+  .Deprecated(new = "findInteractionChangedGenes")
+
+  findInteractionChangedGenes(...)
+
+}
+
+
+#' @title findICG
+#' @name findICG
+#' @description Identifies cell-to-cell Interaction Changed Genes (ICG),
+#' i.e. genes that are differentially expressed due to proximity to other cell types.
 #' @param gobject giotto object
 #' @param expression_values expression values to use
 #' @param selected_genes subset of selected genes (optional)
@@ -1051,9 +1063,7 @@ findCellProximityGenes = function(gobject,
 #'  \item{unif_int:}{ cell-cell interaction}
 #' }
 #' @export
-#' @examples
-#'     findCPG(gobject)
-findCPG = function(gobject,
+findICG = function(gobject,
                    expression_values = 'normalized',
                    selected_genes = NULL,
                    cluster_column,
@@ -1091,13 +1101,25 @@ findCPG = function(gobject,
 }
 
 
+#' @title findCPG
+#' @description Identifies cell-to-cell Interaction Changed Genes (ICG),
+#' i.e. genes that are differentially expressed due to proximity to other cell types.
+#' @inheritDotParams findICG
+#' @seealso \code{\link{findICG}}
+#' @export
+findCPG <- function(...) {
+
+  .Deprecated(new = "findICG")
+
+  findICG(...)
+
+}
 
 
-
-#' @title filterCellProximityGenes
-#' @name filterCellProximityGenes
-#' @description Filter cell proximity gene scores.
-#' @param cpgObject cell proximity gene score object
+#' @title filterInteractionChangedGenes
+#' @name filterInteractionChangedGenes
+#' @description Filter Interaction Changed Gene scores.
+#' @param cpgObject ICG (interaction changed gene) score object
 #' @param min_cells minimum number of source cell type
 #' @param min_cells_expr minimum expression level for source cell type
 #' @param min_int_cells minimum number of interacting neighbor cell type
@@ -1110,9 +1132,7 @@ findCPG = function(gobject,
 #' @param direction differential expression directions to keep
 #' @return cpgObject that contains the filtered differential gene scores
 #' @export
-#' @examples
-#'     filterCellProximityGenes(gobject)
-filterCellProximityGenes = function(cpgObject,
+filterInteractionChangedGenes = function(cpgObject,
                                     min_cells = 4,
                                     min_cells_expr = 1,
                                     min_int_cells = 4,
@@ -1171,11 +1191,24 @@ filterCellProximityGenes = function(cpgObject,
 }
 
 
+#' @title filterCellProximityGenes
+#' @description Filter Interaction Changed Gene scores.
+#' @inheritDotParams findICG
+#' @seealso \code{\link{findICG}}
+#' @export
+filterCellProximityGenes <- function(...) {
 
-#' @title filterCPG
-#' @name filterCPG
-#' @description Filter cell proximity gene scores.
-#' @param cpgObject cell proximity gene score object
+  .Deprecated(new = "filterInteractionChangedGenes")
+
+  filterInteractionChangedGenes(...)
+
+}
+
+
+#' @title filterICG
+#' @name filterICG
+#' @description Filter Interaction Changed Gene scores.
+#' @param cpgObject ICG (interaction changed gene) score object
 #' @param min_cells minimum number of source cell type
 #' @param min_cells_expr minimum expression level for source cell type
 #' @param min_int_cells minimum number of interacting neighbor cell type
@@ -1188,9 +1221,7 @@ filterCellProximityGenes = function(cpgObject,
 #' @param direction differential expression directions to keep
 #' @return cpgObject that contains the filtered differential gene scores
 #' @export
-#' @examples
-#'     filterCPG(gobject)
-filterCPG = function(cpgObject,
+filterICG = function(cpgObject,
                      min_cells = 4,
                      min_cells_expr = 1,
                      min_int_cells = 4,
@@ -1202,21 +1233,34 @@ filterCPG = function(cpgObject,
                      zscores_column = c('cell_type', 'genes'),
                      direction = c('both', 'up', 'down')) {
 
-  filterCellProximityGenes(cpgObject = cpgObject,
-                           min_cells = min_cells,
-                           min_cells_expr = min_cells_expr,
-                           min_int_cells = min_int_cells,
-                           min_int_cells_expr = min_int_cells_expr,
-                           min_fdr = min_fdr,
-                           min_spat_diff = min_spat_diff,
-                           min_log2_fc = min_log2_fc,
-                           min_zscore = min_zscore,
-                           zscores_column = zscores_column,
-                           direction = direction)
+  filterInteractionChangedGenes(cpgObject = cpgObject,
+                                min_cells = min_cells,
+                                min_cells_expr = min_cells_expr,
+                                min_int_cells = min_int_cells,
+                                min_int_cells_expr = min_int_cells_expr,
+                                min_fdr = min_fdr,
+                                min_spat_diff = min_spat_diff,
+                                min_log2_fc = min_log2_fc,
+                                min_zscore = min_zscore,
+                                zscores_column = zscores_column,
+                                direction = direction)
 
 }
 
 
+
+#' @title filterCPG
+#' @description Filter Interaction Changed Gene scores.
+#' @inheritDotParams filterICG
+#' @seealso \code{\link{filterICG}}
+#' @export
+filterCPG <- function(...) {
+
+  .Deprecated(new = "filterICG")
+
+  filterICG(...)
+
+}
 
 
 
@@ -1499,10 +1543,10 @@ combineCellProximityGenes_per_interaction =  function(cpgObject,
 }
 
 
-#' @title combineCellProximityGenes
-#' @name combineCellProximityGenes
-#' @description Combine CPG scores in a pairwise manner.
-#' @param cpgObject cell proximity gene score object
+#' @title combineInteractionChangedGenes
+#' @name combineInteractionChangedGenes
+#' @description Combine ICG scores in a pairwise manner.
+#' @param cpgObject ICG (interaction changed gene) score object
 #' @param selected_ints subset of selected cell-cell interactions (optional)
 #' @param selected_genes subset of selected genes (optional)
 #' @param specific_genes_1 specific geneset combo (need to position match specific_genes_2)
@@ -1517,9 +1561,7 @@ combineCellProximityGenes_per_interaction =  function(cpgObject,
 #' @param verbose verbose
 #' @return cpgObject that contains the filtered differential gene scores
 #' @export
-#' @examples
-#'     combineCellProximityGenes(gobject)
-combineCellProximityGenes = function(cpgObject,
+combineInteractionChangedGenes = function(cpgObject,
                                      selected_ints = NULL,
                                      selected_genes = NULL,
                                      specific_genes_1 = NULL,
@@ -1624,10 +1666,25 @@ combineCellProximityGenes = function(cpgObject,
 }
 
 
-#' @title combineCPG
-#' @name combineCPG
-#' @description Combine CPG scores in a pairwise manner.
-#' @param cpgObject cell proximity gene score object
+#' @title combineCellProximityGenes
+#' @description Combine ICG scores in a pairwise manner.
+#' @inheritDotParams combineInteractionChangedGenes
+#' @seealso \code{\link{combineInteractionChangedGenes}}
+#' @export
+combineCellProximityGenes <- function(...) {
+
+  .Deprecated(new = "combineInteractionChangedGenes")
+
+  combineInteractionChangedGenes(...)
+
+}
+
+
+
+#' @title combineICG
+#' @name combineICG
+#' @description Combine ICG scores in a pairwise manner.
+#' @param cpgObject ICG (interaction changed gene) score object
 #' @param selected_ints subset of selected cell-cell interactions (optional)
 #' @param selected_genes subset of selected genes (optional)
 #' @param specific_genes_1 specific geneset combo (need to position match specific_genes_2)
@@ -1642,9 +1699,7 @@ combineCellProximityGenes = function(cpgObject,
 #' @param verbose verbose
 #' @return cpgObject that contains the filtered differential gene scores
 #' @export
-#' @examples
-#'     combineCPG(gobject)
-combineCPG = function(cpgObject,
+combineICG = function(cpgObject,
                       selected_ints = NULL,
                       selected_genes = NULL,
                       specific_genes_1 = NULL,
@@ -1659,23 +1714,35 @@ combineCPG = function(cpgObject,
                       verbose = T) {
 
 
-  combineCellProximityGenes(cpgObject = cpgObject,
-                            selected_ints = selected_ints,
-                            selected_genes = selected_genes,
-                            specific_genes_1 = specific_genes_1,
-                            specific_genes_2 = specific_genes_2,
-                            min_cells = min_cells,
-                            min_int_cells = min_int_cells,
-                            min_fdr = min_fdr,
-                            min_spat_diff = min_spat_diff,
-                            min_log2_fc = min_log2_fc,
-                            do_parallel = do_parallel,
-                            cores = cores,
-                            verbose = verbose)
+  combineInteractionChangedGenes(cpgObject = cpgObject,
+                                 selected_ints = selected_ints,
+                                 selected_genes = selected_genes,
+                                 specific_genes_1 = specific_genes_1,
+                                 specific_genes_2 = specific_genes_2,
+                                 min_cells = min_cells,
+                                 min_int_cells = min_int_cells,
+                                 min_fdr = min_fdr,
+                                 min_spat_diff = min_spat_diff,
+                                 min_log2_fc = min_log2_fc,
+                                 do_parallel = do_parallel,
+                                 cores = cores,
+                                 verbose = verbose)
 
 
 }
 
+#' @title combineCPG
+#' @description Combine ICG scores in a pairwise manner.
+#' @inheritDotParams combineICG
+#' @seealso \code{\link{combineICG}}
+#' @export
+combineCPG <- function(...) {
+
+  .Deprecated(new = "combineICG")
+
+  combineICG(...)
+
+}
 
 
 
@@ -1692,7 +1759,6 @@ combineCPG = function(cpgObject,
 #' @param gene_set_1 first specific gene set from gene pairs
 #' @param gene_set_2 second specific gene set from gene pairs
 #' @return data.table with average expression scores for each cluster
-#' @details Details will follow soon.
 #' @keywords internal
 average_gene_gene_expression_in_groups = function(gobject,
                                                   cluster_column = 'cell_types',
@@ -1774,8 +1840,6 @@ average_gene_gene_expression_in_groups = function(gobject,
 #' without considering the spatial position of cells.
 #' More details will follow soon.
 #' @export
-#' @examples
-#'     exprCellCellcom(gobject)
 exprCellCellcom = function(gobject,
                            cluster_column = 'cell_types',
                            random_iter = 1000,
@@ -1913,9 +1977,7 @@ exprCellCellcom = function(gobject,
 #' @param cluster_column cluster column with cell type information
 #' @param needed_cell_types vector of cell type names for which a random id will be found
 #' @return list of randomly sampled cell ids with same cell type composition
-#' @details Details will follow.
-#' @examples
-#'     create_cell_type_random_cell_IDs(gobject)
+#' @keywords internal
 create_cell_type_random_cell_IDs = function(gobject,
                                             cluster_column = 'cell_types',
                                             needed_cell_types) {
@@ -1985,8 +2047,6 @@ create_cell_type_random_cell_IDs = function(gobject,
 #'  \item{PI:}{ significanc score: log2fc * -log10(p.adj) }
 #' }
 #' @export
-#' @examples
-#'     specificCellCellcommunicationScores(gobject)
 specificCellCellcommunicationScores = function(gobject,
                                                spatial_network_name = 'Delaunay_network',
                                                cluster_column = 'cell_types',
@@ -2191,8 +2251,6 @@ specificCellCellcommunicationScores = function(gobject,
 #'  \item{PI:}{ significanc score: log2fc * -log10(p.adj) }
 #' }
 #' @export
-#' @examples
-#'     spatCellCellcom(gobject)
 spatCellCellcom = function(gobject,
                            spatial_network_name = 'Delaunay_network',
                            cluster_column = 'cell_types',
@@ -2319,8 +2377,6 @@ spatCellCellcom = function(gobject,
 #' @param detailed detailed option used with \code{\link{spatCellCellcom}} (default = FALSE)
 #' @return combined data.table with spatial and expression communication data
 #' @export
-#' @examples
-#'     combCCcom(gobject)
 combCCcom = function(spatialCC,
                      exprCC,
                      min_lig_nr = 3,
